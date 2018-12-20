@@ -10,8 +10,8 @@ import re
 
 from lxml import etree
 
-from lib import spider, log
-from lib.types import *
+from crash import spider, log
+from crash.types import *
 
 from config import *
 
