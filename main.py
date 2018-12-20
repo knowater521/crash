@@ -99,20 +99,16 @@ class EbdProductDetailSpider(spider.MultiThreadSpider):
             )[0].strip()
 
             review_count = 0
-
             review_count_container = selector.xpath(
                 './/meta[@itemprop="reviewCount"]/@content'
             )
-
             if review_count_container:
                 review_count = review_count_container[0]
 
             review_url = None
-
             review_url_container = selector.xpath(
                 './/span[@class="btn btn-box btn-all-reviews"]/@data-href'
             )
-
             if review_url_container:
                 review_url = 'https://www.eyebuydirect.com' + review_url_container[0]
 
@@ -129,10 +125,16 @@ class EbdProductDetailSpider(spider.MultiThreadSpider):
 
 
 def main() -> None:
-    spider.run_spider(EbdProductListSpider, MYSQL_TABLE_SAVE_EBD, 1, MYSQL_CONFIG)
+    # 从产品列表页抓取部分数据
+    spider.run_spider(
+        EbdProductListSpider,
+        MYSQL_TABLE_SAVE_EBD,
+        1,
+        MYSQL_CONFIG
+    )
 
-    mysql_sql = 'SELECT id, url FROM {}'. \
-        format(MYSQL_TABLE_SAVE_EBD)
+    # 从产品详情页抓取其余数据
+    mysql_sql = 'SELECT id, url FROM {}'.format(MYSQL_TABLE_SAVE_EBD)
     EbdProductDetailSpider.create_task_list(MYSQL_CONFIG, mysql_sql)
     spider.run_spider(
         EbdProductDetailSpider,
