@@ -39,6 +39,7 @@ class EbdProductListSpider(spider.MultiThreadSpider):
                  daemon: bool = True) -> None:
         super().__init__(name, mysql_config, table_save, daemon)
 
+        # 改成抓取 json 数据的头部
         self.session.headers.update(self.headers_json)
 
     def run(self) -> None:
