@@ -35,7 +35,11 @@ class MultiThreadSpider(threading.Thread):
         'x-requested-with': 'XMLHttpRequest'
     }
 
+    # 任务队列，分发任务
     q: queue.Queue = queue.Queue()
+
+    # 同步进程，使用完一定要释放
+    lock = threading.Lock()
 
     def __init__(self,
                  name: str,
