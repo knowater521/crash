@@ -10,7 +10,7 @@ import re
 
 from lxml import etree
 
-from crash import spider, log
+from crash import spider, log, db
 from crash.types import *
 
 from config import *
@@ -75,6 +75,9 @@ class EbdProductListSpider(spider.MultiThreadSpider):
 
 class EbdProductDetailSpider(spider.MultiThreadSpider):
 
+    # 任务队列，分发任务
+    q = queue.Queue()
+
     def __init__(self,
                  name: str,
                  mysql_config: MysqlConfig,
@@ -122,6 +125,17 @@ class EbdProductDetailSpider(spider.MultiThreadSpider):
                 'review_url': review_url,
                 'material': material
             })
+
+    @classmethod
+    def create_task_list(cls, mysql_config: MysqlConfig, sql: str) -> None:
+        """
+        从 MySQL 中读取任务，
+        放入一个全局变量 `q` 队列中，
+        供多个线程使用。
+        """
+
+        for row in db.read_data(mysql_config, sql):
+            cls.q.put(row)
 
 
 def main() -> None:

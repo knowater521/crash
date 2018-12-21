@@ -4,13 +4,12 @@ create:   2018-12-12
 modified: 2018-12-20
 """
 
-import queue
 import atexit
 import threading
 
 import pymysql
 
-from . import db, sessions
+from . import sessions
 from .types import *
 
 
@@ -34,12 +33,6 @@ class MultiThreadSpider(threading.Thread):
         'Content-Type': 'application/json; charset=UTF-8',
         'x-requested-with': 'XMLHttpRequest'
     }
-
-    # 任务队列，分发任务
-    q: queue.Queue = queue.Queue()
-
-    # 同步进程，使用完一定要释放
-    lock = threading.Lock()
 
     def __init__(self,
                  name: str,
@@ -88,7 +81,7 @@ class MultiThreadSpider(threading.Thread):
             pass
 
     def update(self, where: str, item: Dict) -> None:
-        if not self.sql_update:  # 只构建一次，提高性能
+        if not self.sql_update:
             self.sql_update = 'UPDATE {} SET {} WHERE {{}}'.format(
                 self.table_save,
                 ', '.join(f'{k} = %({k})s' for k in item)
@@ -108,17 +101,6 @@ class MultiThreadSpider(threading.Thread):
         self.session.close()
         self.cursor.close()
         self.mysql_conn.close()
-
-    @classmethod
-    def create_task_list(cls, mysql_config: MysqlConfig, sql: str) -> None:
-        """
-        从 MySQL 中读取任务，
-        放入一个全局变量 `q` 队列中，
-        供多个线程使用。
-        """
-
-        for row in db.read_data(mysql_config, sql):
-            cls.q.put(row)
 
 
 def run_spider(
