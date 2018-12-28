@@ -9,8 +9,10 @@ from typing import Tuple, Dict, FrozenSet, Optional, Union, Pattern, List, Itera
 __all__ = [
     'Tuple', 'List', 'Dict', 'FrozenSet', 'Type', 'Optional',
     'Iterator', 'Union', 'Pattern',
-    'MysqlConfig', 'ProductDetailDict'
+    'ProductDetailDict',
+    'MysqlConfig', 'RedisConfig'
 ]
 
 MysqlConfig = Dict[str, Union[str, int]]
+RedisConfig = Dict[str, Union[str, int]]
 ProductDetailDict = Dict[str, Union[str, int, None]]

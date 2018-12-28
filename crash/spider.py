@@ -41,6 +41,8 @@ class MultiThreadSpider(threading.Thread):
                  daemon: bool = True) -> None:
         super().__init__(name=name, daemon=daemon)
 
+        self._running = True
+
         atexit.register(self.close)  # 注册清理函数，线程结束时自动调用
 
         self.mysql_conn = pymysql.connect(
@@ -49,8 +51,6 @@ class MultiThreadSpider(threading.Thread):
             db=mysql_config['db'], autocommit=True
         )
         self.cursor = self.mysql_conn.cursor()
-
-        self._running = True
 
         self.session = sessions.Session()
         self.session.headers.update(self.headers_html)  # 默认 html 头部
@@ -91,7 +91,7 @@ class MultiThreadSpider(threading.Thread):
             self.cursor.execute(self.sql_update.format(where), item)
         except pymysql.IntegrityError:
             pass
-        except pymysql.err.Warning:  # 过滤不合法 mysql 类型
+        except pymysql.err.Warning:
             pass
 
     def terminate(self) -> None:
@@ -118,6 +118,7 @@ def run_spider(
 
     for t in thread_list:
         t.start()
+
     try:
         for t in thread_list:
             t.join()

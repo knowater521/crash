@@ -1,4 +1,4 @@
-"""使用多线程库抓取 ebd 眼镜数据。
+"""使用 crash抓取 ebd 眼镜数据。
 
 create_time: 2018-12-13
 modified_time:
@@ -10,7 +10,7 @@ import re
 
 from lxml import etree
 
-from crash import spider, log, db
+from crash import spider, log, db, distributor
 from crash.types import *
 
 from config import *
@@ -73,10 +73,7 @@ class EbdProductListSpider(spider.MultiThreadSpider):
                     })
 
 
-class EbdProductDetailSpider(spider.MultiThreadSpider):
-
-    # 任务队列，分发任务
-    q = queue.Queue()
+class EbdProductDetailSpider(spider.MultiThreadSpider, distributor.QueueMixin):
 
     def __init__(self,
                  name: str,
@@ -94,6 +91,9 @@ class EbdProductDetailSpider(spider.MultiThreadSpider):
                 break
 
             r = self.session.get(url)
+            if r.status_code >= 400:
+                log.logger.warning(r.status_code)
+                continue
 
             selector = etree.HTML(r.text)
 
@@ -126,26 +126,15 @@ class EbdProductDetailSpider(spider.MultiThreadSpider):
                 'material': material
             })
 
-    @classmethod
-    def create_task_list(cls, mysql_config: MysqlConfig, sql: str) -> None:
-        """
-        从 MySQL 中读取任务，
-        放入一个全局变量 `q` 队列中，
-        供多个线程使用。
-        """
-
-        for row in db.read_data(mysql_config, sql):
-            cls.q.put(row)
-
 
 def main() -> None:
     # 从产品列表页抓取部分数据
-    spider.run_spider(
-        EbdProductListSpider,
-        MYSQL_TABLE_SAVE_EBD,
-        1,
-        MYSQL_CONFIG
-    )
+    # spider.run_spider(
+    #     EbdProductListSpider,
+    #     MYSQL_TABLE_SAVE_EBD,
+    #     1,
+    #     MYSQL_CONFIG
+    # )
 
     # 从产品详情页抓取其余数据
     mysql_sql = 'SELECT id, url FROM {}'.format(MYSQL_TABLE_SAVE_EBD)
