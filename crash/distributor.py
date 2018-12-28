@@ -13,7 +13,7 @@ from .types import *
 class QueueMixin:
 
     # 任务队列，分发任务
-    q = queue.Queue()
+    q: Optional[queue.Queue] = None
 
     @classmethod
     def create_task_list(cls, mysql_config: MysqlConfig, sql: str) -> None:
@@ -22,6 +22,8 @@ class QueueMixin:
         放入一个全局变量 `q` 队列中，
         供多个线程使用。
         """
+
+        cls.q = queue.Queue()
 
         for row in db.read_data(mysql_config, sql):
             cls.q.put(row)

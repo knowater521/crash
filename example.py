@@ -92,7 +92,7 @@ class EbdProductDetailSpider(spider.MultiThreadSpider, distributor.QueueMixin):
 
             r = self.session.get(url)
             if r.status_code >= 400:
-                log.logger.warning(r.status_code)
+                log.logger.warning(f'{r.status_code}：{url}')
                 continue
 
             selector = etree.HTML(r.text)
@@ -129,12 +129,12 @@ class EbdProductDetailSpider(spider.MultiThreadSpider, distributor.QueueMixin):
 
 def main() -> None:
     # 从产品列表页抓取部分数据
-    # spider.run_spider(
-    #     EbdProductListSpider,
-    #     MYSQL_TABLE_SAVE_EBD,
-    #     1,
-    #     MYSQL_CONFIG
-    # )
+    spider.run_spider(
+        EbdProductListSpider,
+        MYSQL_TABLE_SAVE_EBD,
+        1,
+        MYSQL_CONFIG
+    )
 
     # 从产品详情页抓取其余数据
     mysql_sql = 'SELECT id, url FROM {}'.format(MYSQL_TABLE_SAVE_EBD)
