@@ -31,7 +31,7 @@ class MultiThreadSpider(threading.Thread):
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
         'Content-Type': 'application/json; charset=UTF-8',
-        'x-requested-with': 'XMLHttpRequest'
+        'x-requested-with': 'XMLHttpRequest'  # 代表是 ajax 请求
     }
 
     def __init__(self,
